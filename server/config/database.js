@@ -1,7 +1,12 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
+import { fileURLToPath } from 'url'
+import { dirname, resolve } from 'path'
 
-dotenv.config({ path: '../.env' })
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+dotenv.config({ path: resolve(__dirname, '../.env') })
 
 const config = {
     user: process.env.PGUSER,
