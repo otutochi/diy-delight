@@ -56,6 +56,7 @@ const createCustomCarsTable = async () => {
             interior UUID REFERENCES color_options(id) NOT NULL,
             roof UUID REFERENCES color_options(id) NOT NULL,
             wheels UUID REFERENCES color_options(id) NOT NULL,
+            convertible BOOLEAN NOT NULL DEFAULT false,
             price FLOAT NOT NULL,
             created_at TIMESTAMPTZ DEFAULT NOW()
         );

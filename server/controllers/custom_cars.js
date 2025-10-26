@@ -1,21 +1,21 @@
 import { pool } from "../config/database.js"
 
 const createCustomCar = async (req, res) => {
-    const { name, exterior, interior, roof, wheels, price } = req.body
+    const { name, exterior, interior, roof, wheels, convertible, price } = req.body
     if (!name || !exterior || !interior || !roof || !wheels || isNaN(price)) {
         return res.status(400).json({ error: 'One or more invalid fields' })
     }
 
     const query = `
-        INSERT INTO custom_cars (name, exterior, interior, roof, wheels, price)
-        VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING id, name, exterior, interior, roof, wheels, price, created_at
+        INSERT INTO custom_cars (name, exterior, interior, roof, wheels, convertible, price)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING id, name, exterior, interior, roof, wheels, convertible, price, created_at
     `
-    const values = [exterior, interior, roof, wheels, Number(price)]
+    const values = [name, exterior, interior, roof, wheels, convertible === true, Number(price)]
 
     try {
         const { rows } = await pool.query(query, values)
-        return res.status(200).json(rows[0])
+        return res.status(201).json(rows[0])
     } catch(error) {
         console.error('Error creating custom car\n', error)
         return res.status(500).json({ error: 'Error creating custom car' })
@@ -24,7 +24,7 @@ const createCustomCar = async (req, res) => {
 
 const getAllCustomCars = async (req, res) => {
     const query = `
-        SELECT id, name, exterior, interior, roof, wheels, price, created_at 
+        SELECT id, name, exterior, interior, roof, wheels, convertible, price, created_at 
         FROM custom_cars
         ORDER BY created_at DESC
     `
@@ -42,7 +42,7 @@ const getCustomCarById = async (req, res) => {
     const { id } = req.params
 
     const query = `
-        SELECT id, name, exterior, interior, roof, wheels, price, created_at 
+        SELECT id, name, exterior, interior, roof, wheels, convertible, price, created_at 
         FROM custom_cars
         WHERE id = $1
     `
@@ -62,7 +62,7 @@ const getCustomCarById = async (req, res) => {
 const editCustomCarById = async (req, res) => {
     const { id } = req.params
 
-    const { name, exterior, interior, roof, wheels, price } = req.body
+    const { name, exterior, interior, roof, wheels, convertible, price } = req.body
     const fields = []
     const values = []
     let idx = 1
@@ -72,6 +72,7 @@ const editCustomCarById = async (req, res) => {
     if (interior) { fields.push(`interior = $${idx++}`); values.push(interior) }
     if (roof) { fields.push(`roof = $${idx++}`); values.push(roof) }
     if (wheels) { fields.push(`wheels = $${idx++}`); values.push(wheels) }
+    if (convertible !== undefined) { fields.push(`convertible = $${idx++}`); values.push(convertible === true) }
     if(!isNaN(price)) { fields.push(`price = $${idx++}`); values.push(Number(price)) }
     values.push(id)
 
@@ -83,7 +84,7 @@ const editCustomCarById = async (req, res) => {
         UPDATE custom_cars
         SET ${fields.join(', ')}
         WHERE id = $${idx}
-        RETURNING id, name, exterior, interior, roof, wheels, price, created_at
+        RETURNING id, name, exterior, interior, roof, wheels, convertible, price, created_at
     `
 
     try {
@@ -104,7 +105,7 @@ const deleteCustomCarById = async (req, res) => {
     const query = `
         DELETE FROM custom_cars
         WHERE id =$1
-        RETURNING id, name, exterior, interior, roof, wheels, price, created_at
+        RETURNING id, name, exterior, interior, roof, wheels, convertible, price, created_at
     `
 
     try {
